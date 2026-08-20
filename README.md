@@ -19,15 +19,6 @@ A lightweight floating desktop sticky notes app with calendar view for macOS & W
 - **Glassmorphism UI** — Frosted glass look that blends with your desktop
 - **Auto-Save** — Notes save automatically as you type with no manual save needed
 
-## Download
-
-Grab the latest installer from Releases:
-
-| Platform | File |
-|---|---|
-| macOS (Apple Silicon) | `BubbleNotes-2.0.0-arm64.dmg` |
-| Windows | `BubbleNotes Setup 2.0.0.exe` |
-
 ## Run from Source
 
 Requires [Node.js](https://nodejs.org) 18+.
