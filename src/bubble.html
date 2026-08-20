@@ -70,13 +70,17 @@
   </div>
 
   <script>
+    const bubbleEl = document.getElementById('bubble')
     let isDown = false
     let startScreenX = 0, startScreenY = 0
     let offsetX = 0, offsetY = 0
     let isDragging = false
+    let mountTime = Date.now()
 
-    document.addEventListener('mousedown', e => {
+    bubbleEl.addEventListener('mousedown', e => {
       if (e.button !== 0) return
+      // Ignore click if bubble was spawned less than 300ms ago
+      if (Date.now() - mountTime < 300) return
       isDown = true
       isDragging = false
       startScreenX = e.screenX
@@ -95,11 +99,13 @@
     })
 
     document.addEventListener('mouseup', e => {
-      if (isDown && !isDragging) {
-        window.api.restoreMain()
+      if (isDown) {
+        if (!isDragging) {
+          window.api.restoreMain()
+        }
+        isDown = false
+        isDragging = false
       }
-      isDown = false
-      isDragging = false
     })
   </script>
 </body>

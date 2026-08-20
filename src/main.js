@@ -148,12 +148,14 @@ function getBubblePosition() {
 
 ipcMain.on('minimize-to-bubble', () => {
   if (!mainWindow) return
+  mainWindow.hide()
   const pos = getBubblePosition()
 
   if (!bubbleWindow || bubbleWindow.isDestroyed()) {
     bubbleWindow = new BrowserWindow({
       width: 36,
       height: 36,
+      useContentSize: true,
       x: pos.x,
       y: pos.y,
       frame: false,
@@ -161,6 +163,7 @@ ipcMain.on('minimize-to-bubble', () => {
       backgroundColor: '#00000000',
       alwaysOnTop: true,
       resizable: false,
+      thickFrame: false,
       skipTaskbar: true,
       hasShadow: false,
       show: false,
@@ -173,13 +176,11 @@ ipcMain.on('minimize-to-bubble', () => {
     bubbleWindow.loadFile(path.join(__dirname, 'bubble.html'))
     bubbleWindow.once('ready-to-show', () => {
       bubbleWindow.show()
-      mainWindow.hide()
     })
     bubbleWindow.on('closed', () => { bubbleWindow = null })
   } else {
     bubbleWindow.setPosition(pos.x, pos.y)
     bubbleWindow.show()
-    mainWindow.hide()
   }
 })
 
