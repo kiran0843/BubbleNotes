@@ -33,7 +33,7 @@ Grab the latest installer from Releases:
 Requires [Node.js](https://nodejs.org) 18+.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/BubbleNotes.git
+git clone https://github.com/kiran0843/BubbleNotes.git
 cd BubbleNotes
 npm install
 npm start
