@@ -1,0 +1,16 @@
+{
+  "name": "bubble-notes",
+  "version": "2.0.0",
+  "description": "A floating desktop sticky notes and calendar app for Mac and Windows",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac --config build/mac.json",
+    "build:win": "electron-builder --win --x64 --config build/win.json",
+    "build:all": "npm run build:mac && npm run build:win"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}

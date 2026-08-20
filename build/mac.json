@@ -1,0 +1,16 @@
+{
+  "appId": "com.bubblenotes.app",
+  "productName": "BubbleNotes",
+  "directories": {
+    "output": "dist/mac"
+  },
+  "files": [
+    "src/**/*",
+    "assets/**/*",
+    "package.json"
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "target": "dmg"
+  }
+}

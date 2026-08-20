@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BubbleNotes</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Titlebar -->
+  <div class="titlebar" id="titlebar">
+    <div class="titlebar-left">
+      <span class="app-title">BubbleNotes</span>
+    </div>
+    <div class="titlebar-buttons">
+      <button class="btn-bubble" id="btnBubble" title="Minimize to bubble">●</button>
+      <button class="btn-pin active" id="btnPin" title="Always on top">▲</button>
+      <button class="btn-min" id="btnMin" title="Minimize">—</button>
+      <button class="btn-close" id="btnClose" title="Hide">✕</button>
+    </div>
+  </div>
+
+  <!-- View Tabs -->
+  <div class="view-tabs" id="viewTabs">
+    <button class="tab-btn active" id="tabNotes" data-view="notes">📝 Notes</button>
+    <button class="tab-btn" id="tabCalendar" data-view="calendar">📅 Calendar</button>
+    <button class="btn-new-note" id="btnNewNote" title="New Note">+ New</button>
+  </div>
+
+  <!-- Search Bar (Notes View) -->
+  <div class="search-bar" id="searchBar">
+    <input type="text" id="searchInput" placeholder="Search notes..." />
+    <div class="color-filters" id="colorFilters">
+      <button class="color-dot active" data-color="all" title="All"></button>
+      <button class="color-dot" data-color="yellow" title="Yellow" style="background:#fbbf24"></button>
+      <button class="color-dot" data-color="blue" title="Blue" style="background:#60a5fa"></button>
+      <button class="color-dot" data-color="green" title="Green" style="background:#4ade80"></button>
+      <button class="color-dot" data-color="purple" title="Purple" style="background:#c084fc"></button>
+      <button class="color-dot" data-color="pink" title="Pink" style="background:#f472b6"></button>
+      <button class="color-dot" data-color="dark" title="Dark" style="background:#1e293b"></button>
+    </div>
+  </div>
+
+  <!-- Notes List View -->
+  <div class="view-container" id="notesView">
+    <div class="notes-list" id="notesList"></div>
+  </div>
+
+  <!-- Calendar View -->
+  <div class="view-container hidden" id="calendarView">
+    <div class="calendar-header">
+      <button class="cal-nav" id="calPrev">‹</button>
+      <span class="cal-month-label" id="calMonthLabel"></span>
+      <button class="cal-nav" id="calNext">›</button>
+      <button class="cal-today-btn" id="calToday">Today</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div class="cal-date-notes">
+      <div class="cal-date-label" id="calDateLabel">Select a date</div>
+      <div class="cal-notes-list" id="calNotesList"></div>
+    </div>
+  </div>
+
+  <!-- Note Editor (hidden by default) -->
+  <div class="note-editor hidden" id="noteEditor">
+    <div class="editor-header">
+      <button class="editor-back" id="editorBack">← Back</button>
+      <div class="editor-header-actions">
+        <label class="editor-btn-icon" title="Assign Date">
+          📅
+          <input type="date" class="editor-date-input" id="editorDate" />
+        </label>
+        <button class="editor-btn-icon" id="editorPin" title="Pin Note">📌</button>
+        <button class="editor-btn-icon btn-delete" id="editorDelete" title="Delete Note">🗑️</button>
+      </div>
+    </div>
+
+    <div class="editor-paper" id="editorPaper">
+      <input type="text" class="editor-title" id="editorTitle" placeholder="Title" maxlength="100" />
+      <textarea class="editor-content" id="editorContent" placeholder="Start typing..."></textarea>
+    </div>
+
+    <div class="editor-bottom-bar">
+      <!-- Note Color Swatches -->
+      <div class="color-palette" id="editorColors">
+        <span class="palette-label">Card</span>
+        <button class="swatch-btn active" data-color="yellow" style="background:#fef08a" title="Vanilla"></button>
+        <button class="swatch-btn" data-color="blue" style="background:#bae6fd" title="Sky"></button>
+        <button class="swatch-btn" data-color="green" style="background:#bbf7d0" title="Mint"></button>
+        <button class="swatch-btn" data-color="purple" style="background:#e9d5ff" title="Lavender"></button>
+        <button class="swatch-btn" data-color="pink" style="background:#fecdd3" title="Rose"></button>
+        <button class="swatch-btn" data-color="dark" style="background:#334155" title="Slate"></button>
+        <button class="swatch-btn" data-color="glass" style="background:#ffffff; border:1px solid #d4d4d8" title="White"></button>
+        <label class="swatch-custom" title="Custom Card Color">
+          <span style="font-size:10px;">🎨</span>
+          <input type="color" id="editorBgCustom" />
+        </label>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Text Color Swatches -->
+      <div class="text-color-palette" id="editorTextColors">
+        <span class="palette-label">Text</span>
+        <button class="text-swatch active" data-text-color="default" title="Default">
+          <span class="a-preview" style="color:#18181b">A</span>
+        </button>
+        <button class="text-swatch" data-text-color="#2563eb" title="Blue">
+          <span class="a-preview" style="color:#2563eb">A</span>
+        </button>
+        <button class="text-swatch" data-text-color="#059669" title="Green">
+          <span class="a-preview" style="color:#059669">A</span>
+        </button>
+        <button class="text-swatch" data-text-color="#e11d48" title="Red">
+          <span class="a-preview" style="color:#e11d48">A</span>
+        </button>
+        <button class="text-swatch" data-text-color="#9333ea" title="Purple">
+          <span class="a-preview" style="color:#9333ea">A</span>
+        </button>
+        <label class="swatch-custom" title="Custom Text Color">
+          <span style="font-size:11px; font-weight:800; color:#52525b;">A</span>
+          <input type="color" id="editorTextColorCustom" value="#18181b" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
