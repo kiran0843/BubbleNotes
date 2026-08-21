@@ -41,6 +41,16 @@ function saveNotes(notes) {
   fs.writeFileSync(notesPath, JSON.stringify(notes, null, 2), 'utf8')
 }
 
+function setBubbleAlwaysOnTop(win) {
+  if (!win || win.isDestroyed()) return
+  if (process.platform === 'darwin') {
+    win.setAlwaysOnTop(true, 'floating', 1)
+  } else {
+    win.setAlwaysOnTop(true, 'screen-saver', 1)
+  }
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 340,
@@ -55,7 +65,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      backgroundThrottling: false
     }
   })
 
@@ -82,20 +93,48 @@ function createWindow() {
 }
 
 function createTray() {
-  // Use empty icon (can be replaced with real icon)
-  const icon = nativeImage.createEmpty()
+  const iconPath = path.join(__dirname, '..', 'assets', 'bubble-avatar.png')
+  let icon
+  if (fs.existsSync(iconPath)) {
+    icon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 })
+  } else {
+    icon = nativeImage.createEmpty()
+  }
+
   tray = new Tray(icon)
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Show', click: () => mainWindow && mainWindow.show() },
-    { label: 'Hide', click: () => mainWindow && mainWindow.hide() },
+    {
+      label: 'Open Notes',
+      click: () => {
+        if (bubbleWindow && !bubbleWindow.isDestroyed()) bubbleWindow.hide()
+        if (mainWindow) {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      }
+    },
+    {
+      label: 'Show Floating Bubble',
+      click: () => {
+        if (mainWindow) mainWindow.hide()
+        showBubble()
+      }
+    },
     { type: 'separator' },
-    { label: 'Quit', click: () => app.quit() }
+    { label: 'Quit BubbleNotes', click: () => app.quit() }
   ])
   tray.setToolTip('BubbleNotes')
   tray.setContextMenu(contextMenu)
   tray.on('click', () => {
-    if (mainWindow) {
-      mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show()
+    if (mainWindow && mainWindow.isVisible()) {
+      mainWindow.hide()
+      showBubble()
+    } else {
+      if (bubbleWindow && !bubbleWindow.isDestroyed()) bubbleWindow.hide()
+      if (mainWindow) {
+        mainWindow.show()
+        mainWindow.focus()
+      }
     }
   })
 }
@@ -105,7 +144,7 @@ app.whenReady().then(() => {
     app.dock.show()
   }
   createWindow()
-  // createTray() // Can be enabled when icon assets are provided
+  createTray()
 })
 
 app.on('window-all-closed', () => {
@@ -138,17 +177,25 @@ ipcMain.on('window-pin', (_, pinned) => {
 
 // IPC: Floating bubble
 function getBubblePosition() {
-  if (!mainWindow) return { x: 0, y: 0 }
-  const bounds = mainWindow.getBounds()
-  return {
-    x: Math.round(bounds.x + bounds.width / 2 - 18),
-    y: bounds.y
+  const { screen } = require('electron')
+  if (!mainWindow) {
+    const primaryDisplay = screen.getPrimaryDisplay()
+    return { x: primaryDisplay.workArea.x + 20, y: primaryDisplay.workArea.y + 20 }
   }
+  const bounds = mainWindow.getBounds()
+  const display = screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y })
+  const workArea = display.workArea
+
+  let x = Math.round(bounds.x + bounds.width / 2 - 18)
+  let y = bounds.y
+
+  x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - 36))
+  y = Math.max(workArea.y, Math.min(y, workArea.y + workArea.height - 36))
+
+  return { x, y }
 }
 
-ipcMain.on('minimize-to-bubble', () => {
-  if (!mainWindow) return
-  mainWindow.hide()
+function showBubble() {
   const pos = getBubblePosition()
 
   if (!bubbleWindow || bubbleWindow.isDestroyed()) {
@@ -163,6 +210,7 @@ ipcMain.on('minimize-to-bubble', () => {
       backgroundColor: '#00000000',
       alwaysOnTop: true,
       resizable: false,
+      minimizable: false,
       thickFrame: false,
       skipTaskbar: true,
       hasShadow: false,
@@ -170,23 +218,53 @@ ipcMain.on('minimize-to-bubble', () => {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, 'bubble-preload.js')
+        preload: path.join(__dirname, 'bubble-preload.js'),
+        backgroundThrottling: false
       }
     })
+
+    setBubbleAlwaysOnTop(bubbleWindow)
     bubbleWindow.loadFile(path.join(__dirname, 'bubble.html'))
+
     bubbleWindow.once('ready-to-show', () => {
+      setBubbleAlwaysOnTop(bubbleWindow)
       bubbleWindow.show()
     })
-    bubbleWindow.on('closed', () => { bubbleWindow = null })
+
+    bubbleWindow.on('minimize', (e) => {
+      e.preventDefault()
+      bubbleWindow.restore()
+      setBubbleAlwaysOnTop(bubbleWindow)
+    })
+
+    bubbleWindow.on('blur', () => {
+      setBubbleAlwaysOnTop(bubbleWindow)
+    })
+
+    bubbleWindow.on('closed', () => {
+      bubbleWindow = null
+    })
   } else {
     bubbleWindow.setPosition(pos.x, pos.y)
+    setBubbleAlwaysOnTop(bubbleWindow)
     bubbleWindow.show()
   }
+}
+
+ipcMain.on('minimize-to-bubble', () => {
+  if (!mainWindow) return
+  mainWindow.hide()
+  showBubble()
 })
 
 ipcMain.on('bubble-move', (_, x, y) => {
   if (bubbleWindow && !bubbleWindow.isDestroyed()) {
-    bubbleWindow.setPosition(Math.round(x), Math.round(y))
+    const { screen } = require('electron')
+    const display = screen.getDisplayNearestPoint({ x: Math.round(x), y: Math.round(y) })
+    const workArea = display.workArea
+    const clampedX = Math.max(workArea.x, Math.min(Math.round(x), workArea.x + workArea.width - 36))
+    const clampedY = Math.max(workArea.y, Math.min(Math.round(y), workArea.y + workArea.height - 36))
+    bubbleWindow.setPosition(clampedX, clampedY)
   }
 })
 
