@@ -655,12 +655,40 @@ btnPin.addEventListener('click', () => {
   window.api.setPin(pinned)
 })
 
-// Initial Pin UI Setup
-updatePinButtonUI()
+// ══════════════════════════════════════
+//   Keyboard Shortcuts (In-App)
+// ══════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  // Ctrl+N or Cmd+N: New Note
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+    e.preventDefault()
+    openNewNote()
+    return
+  }
+
+  // Ctrl+F or Cmd+F: Focus search
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+    e.preventDefault()
+    switchView('notes')
+    searchInput.focus()
+    searchInput.select()
+    return
+  }
+
+  // Escape: Close editor or blur search
+  if (e.key === 'Escape') {
+    if (!noteEditor.classList.contains('hidden')) {
+      closeEditor()
+    } else if (document.activeElement === searchInput) {
+      searchInput.blur()
+    }
+  }
+})
 
 // ══════════════════════════════════════
 //   Start
 // ══════════════════════════════════════
 init()
+
 
 

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron')
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, globalShortcut } = require('electron')
 const path = require('path')
 const fs = require('fs')
 
@@ -49,6 +49,62 @@ function setBubbleAlwaysOnTop(win) {
     win.setAlwaysOnTop(true, 'screen-saver', 1)
   }
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+}
+
+function toggleNotes() {
+  if (mainWindow) {
+    if (mainWindow.isVisible() && mainWindow.isFocused()) {
+      mainWindow.hide()
+      showBubble()
+    } else {
+      if (bubbleWindow && !bubbleWindow.isDestroyed()) {
+        bubbleWindow.hide()
+      }
+      mainWindow.show()
+      mainWindow.focus()
+    }
+  } else {
+    createWindow()
+  }
+}
+
+function toggleBubble() {
+  if (bubbleWindow && !bubbleWindow.isDestroyed() && bubbleWindow.isVisible()) {
+    // Restore notes from bubble
+    const bubbleBounds = bubbleWindow.getBounds()
+    const mainBounds = mainWindow.getBounds()
+    const { screen } = require('electron')
+    const display = screen.getDisplayNearestPoint({ x: bubbleBounds.x, y: bubbleBounds.y })
+    const workArea = display.workArea
+
+    let newX = Math.round(bubbleBounds.x + 18 - mainBounds.width / 2)
+    let newY = bubbleBounds.y
+
+    newX = Math.max(workArea.x, Math.min(newX, workArea.x + workArea.width - mainBounds.width))
+    newY = Math.max(workArea.y, Math.min(newY, workArea.y + workArea.height - mainBounds.height))
+
+    mainWindow.setPosition(newX, newY)
+    bubbleWindow.hide()
+    mainWindow.show()
+    mainWindow.focus()
+  } else {
+    if (mainWindow) mainWindow.hide()
+    showBubble()
+  }
+}
+
+function registerGlobalShortcuts() {
+  // Quick Action Shortcuts:
+  // Alt+Shift+N or Ctrl+Alt+N: Toggle Notes window
+  // Alt+Shift+B or Ctrl+Alt+B: Toggle Floating Bubble
+  try {
+    globalShortcut.register('Alt+Shift+N', toggleNotes)
+    globalShortcut.register('CommandOrControl+Alt+N', toggleNotes)
+    globalShortcut.register('Alt+Shift+B', toggleBubble)
+    globalShortcut.register('CommandOrControl+Alt+B', toggleBubble)
+  } catch (err) {
+    console.error('Failed to register global shortcuts:', err)
+  }
 }
 
 function createWindow() {
@@ -104,7 +160,7 @@ function createTray() {
   tray = new Tray(icon)
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Open Notes',
+      label: 'Open Notes (Alt+Shift+N)',
       click: () => {
         if (bubbleWindow && !bubbleWindow.isDestroyed()) bubbleWindow.hide()
         if (mainWindow) {
@@ -114,7 +170,7 @@ function createTray() {
       }
     },
     {
-      label: 'Show Floating Bubble',
+      label: 'Show Floating Bubble (Alt+Shift+B)',
       click: () => {
         if (mainWindow) mainWindow.hide()
         showBubble()
@@ -123,7 +179,7 @@ function createTray() {
     { type: 'separator' },
     { label: 'Quit BubbleNotes', click: () => app.quit() }
   ])
-  tray.setToolTip('BubbleNotes')
+  tray.setToolTip('BubbleNotes (Alt+Shift+N)')
   tray.setContextMenu(contextMenu)
   tray.on('click', () => {
     if (mainWindow && mainWindow.isVisible()) {
@@ -145,6 +201,11 @@ app.whenReady().then(() => {
   }
   createWindow()
   createTray()
+  registerGlobalShortcuts()
+})
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
 })
 
 app.on('window-all-closed', () => {

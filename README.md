@@ -45,20 +45,25 @@ npm run build:all
 
 Output files will be in `dist/mac/` and `dist/win/`.
 
-## Usage
+## Usage & Shortcuts
 
-| Action | How |
+| Action | Shortcut / How |
 |---|---|
-| Create a note | Click **+ New** button |
+| **Toggle / Open Notes** | **`Alt + Shift + N`** or **`Ctrl + Alt + N`** (Global hotkey from any app) |
+| **Toggle Floating Bubble** | **`Alt + Shift + B`** or **`Ctrl + Alt + B`** (Global hotkey from any app) |
+| Create a new note | **`Ctrl + N`** / **`Cmd + N`** or Click **+ New** |
+| Search notes | **`Ctrl + F`** / **`Cmd + F`** or Click search bar |
+| Close editor / Cancel search | **`Escape`** |
 | Edit a note | Click on any note card |
 | Change note color | Use the color circles in the editor bottom bar |
 | Pin a note | Click 📌 in the editor |
 | Set a date | Click 📅 in the editor to assign a date |
 | Delete a note | Click 🗑️ in the editor |
-| Search notes | Type in the search bar above the notes list |
 | Filter by color | Click a color dot below the search bar |
 | View calendar | Click the **📅 Calendar** tab |
 | Browse by date | Click any date on the calendar |
 | Add note for date | Click **+ Add** on the calendar date panel |
-| Minimize to bubble | Click **●** in the top bar |
+| Minimize to bubble | Click **●** in top bar or press **`Alt + Shift + B`** |
 | Pin on top | Click **▲** in the top bar |
+| System Tray menu | Right-click the BubbleNotes tray icon in taskbar |
+
